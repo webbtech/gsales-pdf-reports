@@ -124,6 +124,19 @@ func (s *IntegSuite) TestSaveShiftToDisk() {
 	s.NoError(err)
 }
 
+// TestCreateSignedURL method
+func (s *IntegSuite) TestCreateSignedURL() {
+	var err error
+
+	s.report, err = New(s.dayReportReq, cfg)
+	s.NoError(err)
+
+	url, err := s.report.CreateSignedURL()
+	// fmt.Printf("url %+s\n", url)
+	s.NoError(err)
+	s.NotEmpty(url)
+}
+
 // TestcreateShift method
 func (s *IntegSuite) TestcreateShift() {
 	var err error

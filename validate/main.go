@@ -29,13 +29,16 @@ func SetRequest(input *model.RequestInput) (req *model.ReportRequest, err error)
 	// also note, we've already validated the report type above when calling model.ReportStringToType
 	if int(*req.ReportType) == int(model.DayReport) {
 		if input.Date == "" {
-			return nil, &pkgerrors.StdError{Err: err.Error(), Caller: "validate.SetRequest", Msg: "Error missing input.Date"}
+			return nil, &pkgerrors.StdError{Err: "empty input.Date", Caller: "validate.SetRequest", Msg: "Error missing input.Date"}
 		}
 		req.Date, err = time.Parse(timeDayFormat, input.Date)
 		if err != nil {
 			return nil, &pkgerrors.StdError{Err: err.Error(), Caller: "validate.SetRequest", Msg: "Error parsing time input.Date"}
 		}
 	} else if int(*req.ReportType) == int(model.ShiftReport) {
+		if input.RecordNumber == "" {
+			return nil, &pkgerrors.StdError{Err: "empty input.RecordNumber", Caller: "validate.SetRequest", Msg: "Error missing input.RecordNumber"}
+		}
 		if err = testRecordNumber(input.RecordNumber); err != nil {
 			return nil, &pkgerrors.StdError{Err: err.Error(), Caller: "validate.SetRequest", Msg: "Error setting input.RecordNumber"}
 		}

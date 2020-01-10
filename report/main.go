@@ -1,9 +1,11 @@
 package report
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
+	"github.com/pulpfree/gsales-pdf-reports/awsservices"
 	"github.com/pulpfree/gsales-pdf-reports/config"
 	"github.com/pulpfree/gsales-pdf-reports/model"
 	"github.com/pulpfree/gsales-pdf-reports/model/db"
@@ -51,8 +53,22 @@ func New(req *model.ReportRequest, cfg *config.Config) (report *Report, err erro
 // ===================== Exported Methods ====================================================== //
 
 // CreateSignedURL method
-func (r *Report) CreateSignedURL() {
+func (r *Report) CreateSignedURL() (url string, err error) {
+	err = r.create()
+	if err != nil {
+		return url, err
+	}
 
+	var fileOutput bytes.Buffer
+	fileOutput, err = r.file.OutputFile()
+	if err != nil {
+		return "", err
+	}
+
+	filePrefix := r.file.OutputFileName
+	s3Service, err := awsservices.NewS3(r.cfg)
+
+	return s3Service.GetSignedURL(filePrefix, &fileOutput)
 }
 
 // SaveToDisk method

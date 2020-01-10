@@ -16,18 +16,16 @@ import (
 
 // PDF struct
 type PDF struct {
-	// Request        *Request
-	// cfg            *config.Config
-	outputFileName string
+	OutputFileName string
 	file           *gofpdf.Fpdf
 	reportType     *model.ReportType
-	// q              *model.Quote
 }
 
 // Constants
 const (
-	imageDir        = pdfDir + "/image"
-	pdfDir          = ".."
+	imageDir = pdfDir + "/image"
+	// pdfDir          = ".." // local testing
+	pdfDir          = "."
 	timeFormatLong  = "Mon Jan 2, 2006"
 	timeFormatShort = "2006-01-02"
 )
@@ -49,7 +47,6 @@ func Init() *PDF {
 
 // OutputFile method
 func (p *PDF) OutputFile() (buf bytes.Buffer, err error) {
-	// var buf bytes.Buffer
 	if err := p.file.Output(&buf); err != nil {
 		return buf, err
 	}
@@ -63,7 +60,7 @@ func (p *PDF) OutputToDisk(dir string) (err error) {
 	if err != nil {
 		return err
 	}
-	outputPath := path.Join(fp, dir, p.outputFileName)
+	outputPath := path.Join(fp, dir, p.OutputFileName)
 	err = p.file.OutputFileAndClose(outputPath)
 
 	return err
@@ -97,7 +94,7 @@ func (p *PDF) imageFile(fileStr string) string {
 }
 
 func (p *PDF) setOutputFileName(name string) {
-	p.outputFileName = name
+	p.OutputFileName = name
 }
 
 func setFloat(val float64, dec int) string {

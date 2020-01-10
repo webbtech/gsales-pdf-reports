@@ -19,7 +19,6 @@ func ReportStringToType(rType string) (ReportType, error) {
 	case "day":
 		rt = DayReport
 	case "shift":
-		// rt = ShiftReport
 		rt = ShiftReport
 	default:
 		rt = 0

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/pulpfree/gsales-pdf-reports/model"
-	"github.com/pulpfree/gsales-pdf-reports/pkgerrors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -24,7 +23,7 @@ func (r *Day) GetRecord() (*model.DayRecord, error) {
 
 	err := r.setRecord()
 	if err != nil {
-		return nil, &pkgerrors.StdError{Err: err.Error(), Caller: "report.GetRecord", Msg: "Failed to fetch day record"}
+		return nil, err
 	}
 
 	return r.record, nil
