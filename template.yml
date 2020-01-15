@@ -21,7 +21,7 @@ Parameters:
     Description: Bucket for report files
     Type: String
   # ParamAuthLambda:
-  #   Type: String
+    # Type: String
   ParamProjectName:
     Description: Project name
     Type: String
@@ -39,13 +39,22 @@ Resources:
         AllowHeaders: "'Authorization,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
       # EndpointConfiguration: REGIONAL
-      # Auth:
-      #   DefaultAuthorizer: LambdaTokenAuthorizer
-      #   Authorizers:
-      #     LambdaTokenAuthorizer:
-      #       FunctionArn: !Sub "${ParamAuthLambda}"
-      #       Identity:
-      #         ReauthorizeEvery: 300
+      Auth:
+        DefaultAuthorizer: LambdaTokenAuthorizer
+        Authorizers:
+          LambdaTokenAuthorizer:
+            # FunctionArn: !Sub "${ParamAuthLambda}"
+            FunctionArn: !GetAtt AuthLambda.Arn
+            Identity:
+              ReauthorizeEvery: 300
+    #   Auth:
+    #     DefaultAuthorizer: LambdaTokenAuthorizer
+    #     Authorizers:
+    #       LambdaTokenAuthorizer:
+    #         FunctionArn: !GetAtt AuthLambda.Arn
+    #         Identity:
+    #           # ReauthorizeEvery: 0
+    #           ReauthorizeEvery: 300
 
   Lambda:
     Type: AWS::Serverless::Function
@@ -79,7 +88,7 @@ Resources:
           - subnet-0da8d176
           - subnet-7f092816
       Tags:
-        BillTo: 'Universal'
+        BillTo: 'Gales'
       Events:
         Report:
           Type: Api
@@ -87,12 +96,25 @@ Resources:
             Path: /report
             Method: post
             RestApiId: !Ref RestApi
+            Auth:
+              # Authorizer: LambdaTokenAuthorizer
+              Authorizer: NONE
         Ping:
           Type: Api
           Properties:
             Path: /report
             Method: get
             RestApiId: !Ref RestApi
+            Auth:
+              Authorizer: LambdaTokenAuthorizer
+              # Authorizer: NONE
+
+  AuthLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./dist
+      Handler: /authorizer
+      Runtime: go1.x
       Tags:
         BillTo: 'Gales'
 
@@ -182,6 +204,9 @@ Outputs:
   LambdaArn:
     Description: "Lambda ARN"
     Value: !GetAtt Lambda.Arn
+  AuthLambdaArn:
+    Description: "Authorizer Lambda ARN"
+    Value: !GetAtt AuthLambda.Arn
   LambdaRoleArn:
     Description: "Lambda Role ARN"
     Value: !GetAtt LambdaRole.Arn

@@ -206,6 +206,7 @@ func (c *Config) setDBConnectURL() *Config {
 func (c *Config) setFinal() (err error) {
 
 	c.AWSRegion = defs.AWSRegion
+	c.CognitoClientID = defs.CognitoClientID
 	c.S3Bucket = defs.S3Bucket
 	c.DBName = defs.DBName
 	err = c.validateStage()

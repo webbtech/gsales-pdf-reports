@@ -5,8 +5,10 @@ go 1.13
 require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.0.2
 	github.com/DataDog/zstd v1.4.4 // indirect
+	github.com/Soluto/fetch-jwk v0.1.1
 	github.com/aws/aws-lambda-go v1.13.3
 	github.com/aws/aws-sdk-go v1.26.8
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/pulpfree/gsales-xls-reports v0.0.0-20191217150640-9af08afdbebb
 	github.com/sirupsen/logrus v1.4.2

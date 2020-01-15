@@ -1,3 +1,5 @@
+package main
+
 // Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
@@ -10,7 +12,6 @@
 // on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
-package authorizer
 
 import (
 	"context"
@@ -57,17 +58,18 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 	resp.Region = tmp[3]
 	resp.APIID = apiGatewayArnTmp[0]
 	resp.Stage = apiGatewayArnTmp[1]
-	resp.DenyAllMethods()
+	// resp.DenyAllMethods()
 	// resp.AllowMethod(Get, "/pets/*")
+	resp.AllowAllMethods()
 
 	// new! -- add additional key-value pairs associated with the authenticated principal
 	// these are made available by APIGW like so: $context.authorizer.<key>
 	// additional context is cached
-	resp.Context = map[string]interface{}{
+	/* resp.Context = map[string]interface{}{
 		"stringKey":  "stringval",
 		"numberKey":  123,
 		"booleanKey": true,
-	}
+	} */
 
 	return resp.APIGatewayCustomAuthorizerResponse, nil
 }
@@ -76,8 +78,10 @@ func main() {
 	lambda.Start(handleRequest)
 }
 
+// HttpVerb type
 type HttpVerb int
 
+// Verb constants
 const (
 	Get HttpVerb = iota
 	Post
@@ -111,8 +115,10 @@ func (hv HttpVerb) String() string {
 	return ""
 }
 
+// Effect type
 type Effect int
 
+// Action constant
 const (
 	Allow Effect = iota
 	Deny
@@ -128,6 +134,7 @@ func (e Effect) String() string {
 	return ""
 }
 
+// AuthorizerResponse struct
 type AuthorizerResponse struct {
 	events.APIGatewayCustomAuthorizerResponse
 
@@ -144,6 +151,7 @@ type AuthorizerResponse struct {
 	Stage string
 }
 
+// NewAuthorizerResponse function
 func NewAuthorizerResponse(principalID string, AccountID string) *AuthorizerResponse {
 	return &AuthorizerResponse{
 		APIGatewayCustomAuthorizerResponse: events.APIGatewayCustomAuthorizerResponse{
@@ -177,18 +185,22 @@ func (r *AuthorizerResponse) addMethod(effect Effect, verb HttpVerb, resource st
 	r.PolicyDocument.Statement = append(r.PolicyDocument.Statement, s)
 }
 
+// AllowAllMethods method
 func (r *AuthorizerResponse) AllowAllMethods() {
 	r.addMethod(Allow, All, "*")
 }
 
+// DenyAllMethods method
 func (r *AuthorizerResponse) DenyAllMethods() {
 	r.addMethod(Deny, All, "*")
 }
 
+// AllowMethod method
 func (r *AuthorizerResponse) AllowMethod(verb HttpVerb, resource string) {
 	r.addMethod(Allow, verb, resource)
 }
 
+// DenyMethod method
 func (r *AuthorizerResponse) DenyMethod(verb HttpVerb, resource string) {
 	r.addMethod(Deny, verb, resource)
 }
