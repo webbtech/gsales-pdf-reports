@@ -14,6 +14,7 @@ import (
 	"github.com/pulpfree/gsales-pdf-reports/report"
 	"github.com/pulpfree/gsales-pdf-reports/validate"
 	log "github.com/sirupsen/logrus"
+	"github.com/thundra-io/thundra-lambda-agent-go/thundra"
 )
 
 // Response data format
@@ -86,7 +87,9 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 			Timestamp: t.Unix(),
 		}, hdrs, err), nil
 	}
-	log.Infof("signed url created %s", url)
+
+	urlStr := url[0:100]
+	log.Infof("signed url created %s", urlStr)
 
 	return gatewayResponse(Response{
 		Code:      201,
@@ -98,7 +101,8 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	// lambda.Start(HandleRequest)
+	lambda.Start(thundra.Wrap(HandleRequest))
 }
 
 func gatewayResponse(resp Response, hdrs map[string]string, err error) events.APIGatewayProxyResponse {

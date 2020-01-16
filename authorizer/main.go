@@ -15,16 +15,35 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/pulpfree/lambda-utils/tokenvalidator"
+	"github.com/pulpfree/gsales-pdf-reports/config"
+	"github.com/thundra-io/thundra-lambda-agent-go/thundra"
 )
 
+var cfg *config.Config
+
+func init() {
+	cfg = &config.Config{}
+	err := cfg.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
-	log.Println("Client token: " + event.AuthorizationToken)
-	log.Println("Method ARN: " + event.MethodArn)
+	// log.Println("Client token: " + event.AuthorizationToken)
+	// log.Println("Method ARN: " + event.MethodArn)
+
+	principalID, err := tokenvalidator.Validate(cfg.CognitoClientID, event.AuthorizationToken)
+	if err != nil {
+		return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized")
+	}
 
 	// validate the incoming token
 	// and produce the principal user identifier associated with the token
@@ -33,7 +52,7 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 	// 1. Call out to OAuth provider
 	// 2. Decode a JWT token inline
 	// 3. Lookup in a self-managed DB
-	principalID := "user|a1b2c3d4"
+	// principalID := "user|a1b2c3d4"
 	// you can send a 401 Unauthorized response to the client by failing like so:
 	// return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized")
 
@@ -75,15 +94,16 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 }
 
 func main() {
-	lambda.Start(handleRequest)
+	// lambda.Start(handleRequest)
+	lambda.Start(thundra.Wrap(handleRequest))
 }
 
-// HttpVerb type
-type HttpVerb int
+// HTTPVerb type
+type HTTPVerb int
 
 // Verb constants
 const (
-	Get HttpVerb = iota
+	Get HTTPVerb = iota
 	Post
 	Put
 	Delete
@@ -93,7 +113,7 @@ const (
 	All
 )
 
-func (hv HttpVerb) String() string {
+func (hv HTTPVerb) String() string {
 	switch hv {
 	case Get:
 		return "GET"
@@ -167,7 +187,7 @@ func NewAuthorizerResponse(principalID string, AccountID string) *AuthorizerResp
 	}
 }
 
-func (r *AuthorizerResponse) addMethod(effect Effect, verb HttpVerb, resource string) {
+func (r *AuthorizerResponse) addMethod(effect Effect, verb HTTPVerb, resource string) {
 	resourceArn := "arn:aws:execute-api:" +
 		r.Region + ":" +
 		r.AccountID + ":" +
@@ -196,11 +216,11 @@ func (r *AuthorizerResponse) DenyAllMethods() {
 }
 
 // AllowMethod method
-func (r *AuthorizerResponse) AllowMethod(verb HttpVerb, resource string) {
+func (r *AuthorizerResponse) AllowMethod(verb HTTPVerb, resource string) {
 	r.addMethod(Allow, verb, resource)
 }
 
 // DenyMethod method
-func (r *AuthorizerResponse) DenyMethod(verb HttpVerb, resource string) {
+func (r *AuthorizerResponse) DenyMethod(verb HTTPVerb, resource string) {
 	r.addMethod(Deny, verb, resource)
 }
