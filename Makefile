@@ -14,8 +14,7 @@ build: clean
 	@for dir in `ls handler`; do \
 		GOOS=linux go build -o dist/$$dir github.com/pulpfree/gsales-pdf-reports/handler/$$dir; \
 	done
-	# now the authorizer
-	GOOS=linux go build -o dist/authorizer github.com/pulpfree/gsales-pdf-reports/authorizer; \
+	@GOOS=linux go build -o dist/authorizer github.com/pulpfree/gsales-pdf-reports/authorizer;
 	@cp ./config/defaults.yml dist/
 	@cp -r ./image dist/
 	@echo "build successful"
@@ -59,7 +58,8 @@ awsdeploy:
 	--parameter-overrides \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamReportBucket=${AWS_REPORT_BUCKET} \
-		ParamProjectName=$(PROJECT_NAME)
+		ParamProjectName=$(PROJECT_NAME) \
+		ParamThundraKey=$(THUNDRA_API_KEY)
 
 # ParamLambdaBucket=$(AWS_BUCKET_NAME)
 #			ParamKeyExpiration=$(EXPIRATION) \

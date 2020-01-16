@@ -1,3 +1,5 @@
+package main
+
 // Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License").
@@ -10,20 +12,38 @@
 // on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
-package authorizer
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/pulpfree/lambda-utils/tokenvalidator"
+	"github.com/pulpfree/gsales-pdf-reports/config"
+	"github.com/thundra-io/thundra-lambda-agent-go/thundra"
 )
 
+var cfg *config.Config
+
+func init() {
+	cfg = &config.Config{}
+	err := cfg.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
-	log.Println("Client token: " + event.AuthorizationToken)
-	log.Println("Method ARN: " + event.MethodArn)
+	// log.Println("Client token: " + event.AuthorizationToken)
+	// log.Println("Method ARN: " + event.MethodArn)
+
+	principalID, err := tokenvalidator.Validate(cfg.CognitoClientID, event.AuthorizationToken)
+	if err != nil {
+		return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized")
+	}
 
 	// validate the incoming token
 	// and produce the principal user identifier associated with the token
@@ -32,7 +52,7 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 	// 1. Call out to OAuth provider
 	// 2. Decode a JWT token inline
 	// 3. Lookup in a self-managed DB
-	principalID := "user|a1b2c3d4"
+	// principalID := "user|a1b2c3d4"
 	// you can send a 401 Unauthorized response to the client by failing like so:
 	// return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized")
 
@@ -57,29 +77,33 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 	resp.Region = tmp[3]
 	resp.APIID = apiGatewayArnTmp[0]
 	resp.Stage = apiGatewayArnTmp[1]
-	resp.DenyAllMethods()
+	// resp.DenyAllMethods()
 	// resp.AllowMethod(Get, "/pets/*")
+	resp.AllowAllMethods()
 
 	// new! -- add additional key-value pairs associated with the authenticated principal
 	// these are made available by APIGW like so: $context.authorizer.<key>
 	// additional context is cached
-	resp.Context = map[string]interface{}{
+	/* resp.Context = map[string]interface{}{
 		"stringKey":  "stringval",
 		"numberKey":  123,
 		"booleanKey": true,
-	}
+	} */
 
 	return resp.APIGatewayCustomAuthorizerResponse, nil
 }
 
 func main() {
-	lambda.Start(handleRequest)
+	// lambda.Start(handleRequest)
+	lambda.Start(thundra.Wrap(handleRequest))
 }
 
-type HttpVerb int
+// HTTPVerb type
+type HTTPVerb int
 
+// Verb constants
 const (
-	Get HttpVerb = iota
+	Get HTTPVerb = iota
 	Post
 	Put
 	Delete
@@ -89,7 +113,7 @@ const (
 	All
 )
 
-func (hv HttpVerb) String() string {
+func (hv HTTPVerb) String() string {
 	switch hv {
 	case Get:
 		return "GET"
@@ -111,8 +135,10 @@ func (hv HttpVerb) String() string {
 	return ""
 }
 
+// Effect type
 type Effect int
 
+// Action constant
 const (
 	Allow Effect = iota
 	Deny
@@ -128,6 +154,7 @@ func (e Effect) String() string {
 	return ""
 }
 
+// AuthorizerResponse struct
 type AuthorizerResponse struct {
 	events.APIGatewayCustomAuthorizerResponse
 
@@ -144,6 +171,7 @@ type AuthorizerResponse struct {
 	Stage string
 }
 
+// NewAuthorizerResponse function
 func NewAuthorizerResponse(principalID string, AccountID string) *AuthorizerResponse {
 	return &AuthorizerResponse{
 		APIGatewayCustomAuthorizerResponse: events.APIGatewayCustomAuthorizerResponse{
@@ -159,7 +187,7 @@ func NewAuthorizerResponse(principalID string, AccountID string) *AuthorizerResp
 	}
 }
 
-func (r *AuthorizerResponse) addMethod(effect Effect, verb HttpVerb, resource string) {
+func (r *AuthorizerResponse) addMethod(effect Effect, verb HTTPVerb, resource string) {
 	resourceArn := "arn:aws:execute-api:" +
 		r.Region + ":" +
 		r.AccountID + ":" +
@@ -177,18 +205,22 @@ func (r *AuthorizerResponse) addMethod(effect Effect, verb HttpVerb, resource st
 	r.PolicyDocument.Statement = append(r.PolicyDocument.Statement, s)
 }
 
+// AllowAllMethods method
 func (r *AuthorizerResponse) AllowAllMethods() {
 	r.addMethod(Allow, All, "*")
 }
 
+// DenyAllMethods method
 func (r *AuthorizerResponse) DenyAllMethods() {
 	r.addMethod(Deny, All, "*")
 }
 
-func (r *AuthorizerResponse) AllowMethod(verb HttpVerb, resource string) {
+// AllowMethod method
+func (r *AuthorizerResponse) AllowMethod(verb HTTPVerb, resource string) {
 	r.addMethod(Allow, verb, resource)
 }
 
-func (r *AuthorizerResponse) DenyMethod(verb HttpVerb, resource string) {
+// DenyMethod method
+func (r *AuthorizerResponse) DenyMethod(verb HTTPVerb, resource string) {
 	r.addMethod(Deny, verb, resource)
 }

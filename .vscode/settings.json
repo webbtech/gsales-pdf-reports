@@ -2,5 +2,11 @@
   "cSpell.words": [
     "apiid",
     "structs"
+  ],
+  "cSpell.ignoreWords": [
+    "apigw",
+    "dgrijalva",
+    "gatewayresponse",
+    "soluto"
   ]
 }
