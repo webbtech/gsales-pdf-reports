@@ -13,6 +13,8 @@ package main
 // express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 
+// This file originally found at: https://github.com/awslabs/aws-apigateway-lambda-authorizer-blueprints/blob/master/blueprints/go/main.go
+
 import (
 	"context"
 	"errors"
@@ -21,8 +23,8 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/pulpfree/lambda-utils/tokenvalidator"
 	"github.com/pulpfree/gsales-pdf-reports/config"
+	"github.com/pulpfree/lambda-utils/tokenvalidator"
 	"github.com/thundra-io/thundra-lambda-agent-go/thundra"
 )
 
@@ -42,6 +44,7 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 
 	principalID, err := tokenvalidator.Validate(cfg.CognitoClientID, event.AuthorizationToken)
 	if err != nil {
+		log.Println("Error in token validation: " + err.Error())
 		return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized")
 	}
 
@@ -94,7 +97,6 @@ func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerR
 }
 
 func main() {
-	// lambda.Start(handleRequest)
 	lambda.Start(thundra.Wrap(handleRequest))
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"time"
 
@@ -45,11 +46,19 @@ func init() {
 }
 
 // HandleRequest function
+// NOTE: strange, the error parameter cannot be used or removed... would be good to dig into
 func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	hdrs := make(map[string]string)
 	hdrs["Content-Type"] = "application/json"
 	hdrs["Access-Control-Allow-Origin"] = "*"
+	hdrs["Access-Control-Allow-Methods"] = "GET,OPTIONS,POST,PUT"
+	hdrs["Access-Control-Allow-Headers"] = "Authorization,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+
+	if req.HTTPMethod == "OPTIONS" {
+		return events.APIGatewayProxyResponse{Body: string("null"), Headers: hdrs, StatusCode: 200}, nil
+	}
+
 	t := time.Now()
 
 	// If this is a ping test, intercept and return
@@ -69,6 +78,7 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 	// validate input
 	reportRequest, err := validate.SetRequest(r)
 	if err != nil {
+		fmt.Printf("err in validate %+v\n", err)
 		return gatewayResponse(Response{
 			Timestamp: t.Unix(),
 		}, hdrs, err), nil
@@ -101,7 +111,6 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 }
 
 func main() {
-	// lambda.Start(HandleRequest)
 	lambda.Start(thundra.Wrap(HandleRequest))
 }
 
