@@ -16,7 +16,7 @@ vendor/
 
 .env
 dist/
-docs/*
+docs/ssm.md
 tmp
 scratch
 package.yml

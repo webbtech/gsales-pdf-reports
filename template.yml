@@ -8,6 +8,15 @@ Parameters:
     Description: Username of the IAM user for this service
     Type: String
     Default: sysadmin
+  ParamCertificateArn:
+    Description: Domain Certificate Arn
+    Type: String
+  ParamCustomDomainName:
+    Description: Custom Domain Name
+    Type: String
+  ParamHostedZoneId:
+    Description: Hosted Zone ID
+    Type: String
   ParamKMSKeyID:
     Description: KMS key id
     Type: String
@@ -29,12 +38,6 @@ Resources:
     Properties:
       StageName: Prod
       EndpointConfiguration: REGIONAL
-      # Cors: "'*'"
-      Cors:
-        AllowMethods: "'GET,OPTIONS,POST,PUT'"
-        AllowHeaders: "'Authorization,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
-  
       Auth:
         DefaultAuthorizer: LambdaTokenAuthorizer
         Authorizers:
@@ -42,6 +45,7 @@ Resources:
             FunctionArn: !GetAtt AuthLambda.Arn
             Identity:
               ReauthorizeEvery: 300
+              # ReauthorizeEvery: 1 # for testing
       # Documentation for below: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#gateway-response-object
       # Oddly, this property does not work with sam local
       GatewayResponses:
@@ -55,17 +59,16 @@ Resources:
               Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'*'"
 
-      # Docs for this at: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#gateway-response-object
-      # Domain:
-      #   DomainName: String # REQUIRED | custom domain name being configured on the api, "www.example.com"
-      #   CertificateARN: String # REQUIRED | Must be a valid [certificate ARN](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-certificatemanager-certificate.html), and for EDGE endpoint configuration the certificate must be in us-east-1
-      #   EndpointConfiguration: "EDGE" # optional | Default value is REGIONAL | Accepted values are EDGE | REGIONAL
-      #   BasePath:
-      #     - String # optional | Default value is '/' | List of basepaths to be configured with the ApiGateway Domain Name 
-      #   Route53: # optional | Default behavior is to treat as None - does not create Route53 resources | Enable these settings to create Route53 Recordsets
-      #     HostedZoneId: String # REQUIRED | Must be a hostedzoneid value of a [`AWS::Route53::HostedZone`](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53-hostedzone.html) resource
-      #     EvaluateTargetHealth: Boolean # optional | default value is false
-      #     DistributionDomainName: String # OPTIONAL if the EndpointConfiguration is EDGE | Default points to Api Gateway Distribution | Domain name of a [cloudfront distribution](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudfront-distribution.html) 
+      # Docs for this at: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#domain-configuration-object
+      Domain:
+        DomainName: !Ref ParamCustomDomainName
+        CertificateArn: !Ref ParamCertificateArn
+        EndpointConfiguration: "REGIONAL"
+        Route53:
+          HostedZoneId: !Ref ParamHostedZoneId
+          EvaluateTargetHealth: true
+          DistributionDomainName:
+            Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
 
   Lambda:
     Type: AWS::Serverless::Function
@@ -74,8 +77,9 @@ Resources:
       CodeUri: ./dist
       Handler: /report
       Role: !GetAtt LambdaRole.Arn
-      Timeout: 20
+      Timeout: 10
       MemorySize: 512
+      AutoPublishAlias: prod
       Environment:
         Variables:
           Stage: prod
@@ -98,20 +102,26 @@ Resources:
           Type: Api
           Properties:
             Path: /report
-            Method: post
+            Method: POST
             RestApiId: !Ref RestApi
             Auth:
               Authorizer: LambdaTokenAuthorizer
-              # Authorizer: NONE
         Ping:
           Type: Api
           Properties:
             Path: /report
-            Method: get
+            Method: GET
             RestApiId: !Ref RestApi
             Auth:
-              Authorizer: LambdaTokenAuthorizer
-              # Authorizer: NONE
+              Authorizer: NONE
+        Options:
+          Type: Api
+          Properties:
+            Path: /report
+            Method: OPTIONS
+            RestApiId: !Ref RestApi
+            Auth:
+              Authorizer: NONE
 
   AuthLambda:
     Type: AWS::Serverless::Function
@@ -244,7 +254,6 @@ Resources:
             - logs:PutLogEvents
             Resource: '*'
 
-
 Outputs:
   ApiId:
     Description: API ID
@@ -259,9 +268,18 @@ Outputs:
   LambdaArn:
     Description: "Lambda ARN"
     Value: !GetAtt Lambda.Arn
+  LambdaVersion:
+    Description: "Lambda Version"
+    Value: !Ref Lambda.Version
+  LambdaAlias:
+    Description: "Lambda Alias"
+    Value: !Ref Lambda.Alias
   AuthLambdaArn:
     Description: "Authorizer Lambda ARN"
     Value: !GetAtt AuthLambda.Arn
   LambdaRoleArn:
     Description: "Lambda Role ARN"
     Value: !GetAtt LambdaRole.Arn
+  AuthLambdaRoleArn:
+    Description: "Authorizer Lambda Role ARN"
+    Value: !GetAtt AuthLambdaRole.Arn
