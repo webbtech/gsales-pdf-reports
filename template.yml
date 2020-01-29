@@ -46,6 +46,7 @@ Resources:
             Identity:
               ReauthorizeEvery: 300
               # ReauthorizeEvery: 1 # for testing
+              
       # Documentation for below: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#gateway-response-object
       # Oddly, this property does not work with sam local
       GatewayResponses:
@@ -198,7 +199,6 @@ Resources:
             Action:
             - s3:*
             Resource: 
-              # - Fn::Sub: arn:aws:s3:::${ParamLambdaBucket}/*
               Fn::Sub: arn:aws:s3:::${ParamReportBucket}/*
       - PolicyName: FunctionVPCAccess
         PolicyDocument:
