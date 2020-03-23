@@ -80,7 +80,7 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Timeout: 10
       MemorySize: 512
-      AutoPublishAlias: prod
+      # AutoPublishAlias: prod
       Environment:
         Variables:
           Stage: prod
@@ -131,6 +131,8 @@ Resources:
       Handler: /authorizer
       Runtime: go1.x
       Role: !GetAtt AuthLambdaRole.Arn
+      Timeout: 10
+      MemorySize: 256
       Environment:
         Variables:
           thundra_apiKey: !Ref ParamThundraKey
