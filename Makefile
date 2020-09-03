@@ -61,8 +61,7 @@ awsdeploy:
 		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamProjectName=$(PROJECT_NAME) \
-		ParamReportBucket=${AWS_REPORT_BUCKET} \
-		ParamThundraKey=$(THUNDRA_API_KEY)
+		ParamReportBucket=${AWS_REPORT_BUCKET}
 
 describe:
 	@aws cloudformation describe-stacks \
