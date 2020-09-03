@@ -118,6 +118,7 @@ func (r *Shift) setRecord() (err error) {
 	// summary values
 	sum := model.ShiftSummary{
 		Fuel:            model.SetFloat(shift.Summary.FuelDollar),
+		FuelAdjust:      model.SetFloat(shift.Summary.FuelAdjust),
 		OtherFuelDollar: model.SetFloat(shift.Summary.OtherFuelDollar),
 		OtherFuelLitre:  model.SetFloat(shift.Summary.OtherFuelLitre),
 		Litres:          model.SetFloat(shift.Summary.FuelLitre),

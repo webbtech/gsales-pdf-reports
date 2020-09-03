@@ -12,18 +12,17 @@ import (
 )
 
 const (
-	date       = "2019-12-21"
-	dateFormat = "2006-01-02"
-	defaultsFP = "../config/defaults.yml"
-	// recordNumber = "2019-12-21-2"
-	// recordNumber = "2019-12-21-3"
-	// stationID    = "56cf1815982d82b0f3000001" // Bridge
+	date         = "2019-12-21"
+	dateFormat   = "2006-01-02"
+	defaultsFP   = "../config/defaults.yml"
+	recordNumber = "2020-08-11-2"
+	stationID    = "56cf1815982d82b0f3000001" // Bridge
 	// stationID = "56cf1815982d82b0f3000012" // Thorold Stone Back
 	// stationID = "56cf1815982d82b0f300000d" // Virgil
 
 	// test for non fuel adjustment with amounts
-	recordNumber = "2019-12-22-3"
-	stationID    = "56cf1815982d82b0f3000006" // Collier Road
+	// recordNumber = "2019-12-22-3"
+	// stationID    = "56cf1815982d82b0f3000006" // Collier Road
 
 	// test for non fuel adjustment with comments
 	// recordNumber = "2019-12-15-1"

@@ -80,6 +80,9 @@ func (d *Shift) setSales() {
 	pdf.CellFormat(labelW, cellH, "Non-Fuel", "B", 0, "", false, 0, "")
 	pdf.CellFormat(valueW, cellH, setFloat(d.record.NonFuel, 2), "B", 1, "R", false, 0, "")
 
+	pdf.CellFormat(labelW, cellH, "Fuel Adjustment", "B", 0, "", false, 0, "")
+	pdf.CellFormat(valueW, cellH, setFloat(d.record.FuelAdjust, 2), "B", 1, "R", false, 0, "")
+
 	pdf.SetFont("Arial", "B", 12)
 	pdf.CellFormat(labelW, summaryCellH, "Total", "B", 0, "", false, 0, "")
 	pdf.CellFormat(valueW, summaryCellH, setFloat(d.record.Total, 2), "B", 1, "R", false, 0, "")

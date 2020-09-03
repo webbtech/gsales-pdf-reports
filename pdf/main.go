@@ -24,7 +24,7 @@ type PDF struct {
 // Constants
 const (
 	imageDir = pdfDir + "/image"
-	// pdfDir          = ".." // local testing
+	// pdfDir   = ".." // local testing if no symbolic link from image in report directory
 	pdfDir          = "."
 	timeFormatLong  = "Mon Jan 2, 2006"
 	timeFormatShort = "2006-01-02"

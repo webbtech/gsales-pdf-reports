@@ -108,6 +108,7 @@ type NonFuelJournal struct {
 // ShiftSummary struct
 type ShiftSummary struct {
 	Fuel            float64
+	FuelAdjust      float64
 	OtherFuelDollar float64
 	OtherFuelLitre  float64
 	Litres          float64
