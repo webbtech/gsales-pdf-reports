@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"time"
 
+	pkgerrors "github.com/pulpfree/go-errors"
 	"github.com/pulpfree/gsales-pdf-reports/model"
-	"github.com/pulpfree/gsales-pdf-reports/pkgerrors"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

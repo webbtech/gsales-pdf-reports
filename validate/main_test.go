@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	pkgerrors "github.com/pulpfree/go-errors"
 	"github.com/pulpfree/gsales-pdf-reports/model"
-	"github.com/pulpfree/gsales-pdf-reports/pkgerrors"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

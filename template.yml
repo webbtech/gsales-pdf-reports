@@ -29,6 +29,14 @@ Parameters:
   ParamProjectName:
     Description: Project name
     Type: String
+  ParamSecurityGroupIds:
+    Description: SecurityGroupIds
+    ConstraintDescription: 'must be list of EC2 security group ids'
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+  ParamSubnetIds:
+    Description: SecurityGroupIds
+    ConstraintDescription: 'must be list of EC2 subnet ids'
+    Type: 'List<AWS::EC2::Subnet::Id>'
 
 Resources:
   RestApi:
@@ -44,8 +52,8 @@ Resources:
           LambdaTokenAuthorizer:
             FunctionArn: !GetAtt AuthLambda.Arn
             Identity:
-              # ReauthorizeEvery: 300
-              ReauthorizeEvery: 1 # for testing purposes
+              ReauthorizeEvery: 300
+              # ReauthorizeEvery: 1 # for testing purposes
               
       # Documentation for below: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#gateway-response-object
       # Oddly, this property does not work with sam local
@@ -85,13 +93,8 @@ Resources:
         Variables:
           Stage: prod
       VpcConfig:
-        # TODO: these should be extracted into params and .env file
-        SecurityGroupIds:
-          - sg-5afb2932
-          - sg-8f6baee7
-        SubnetIds:
-          - subnet-0da8d176
-          - subnet-7f092816
+        SecurityGroupIds: !Ref ParamSecurityGroupIds
+        SubnetIds: !Ref ParamSubnetIds
       Tags:
         BillTo: 'Gales'
       Events:

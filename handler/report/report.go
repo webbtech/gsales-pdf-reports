@@ -9,9 +9,9 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	pkgerrors "github.com/pulpfree/go-errors"
 	"github.com/pulpfree/gsales-pdf-reports/config"
 	"github.com/pulpfree/gsales-pdf-reports/model"
-	"github.com/pulpfree/gsales-pdf-reports/pkgerrors"
 	"github.com/pulpfree/gsales-pdf-reports/report"
 	"github.com/pulpfree/gsales-pdf-reports/validate"
 	log "github.com/sirupsen/logrus"

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,18 +10,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	log "github.com/sirupsen/logrus"
+
+	pkgerrors "github.com/pulpfree/go-errors"
 	"github.com/pulpfree/gsales-pdf-reports/model"
-	"github.com/pulpfree/gsales-pdf-reports/pkgerrors"
 )
 
 // MDB struct
 type MDB struct {
 	client *mongo.Client
-	// cfg    *model.Config
 	dbName string
 	db     *mongo.Database
-	// employeeMap map[primitive.ObjectID]string
-	// stationMap  map[primitive.ObjectID]*model.Station
 }
 
 // DB and Table constants
@@ -60,7 +58,7 @@ func NewDB(connection string, dbNm string) (*MDB, error) {
 		log.Fatal(err)
 	}
 
-	log.Println("Connected to MongoDB!")
+	log.Infoln("Connected to MongoDB!")
 
 	return &MDB{
 		client: client,
@@ -77,7 +75,7 @@ func (db *MDB) Close() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Connection to MongoDB closed.")
+	log.Infoln("Connection to MongoDB closed.")
 }
 
 // GetDay method

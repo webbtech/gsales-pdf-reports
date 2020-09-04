@@ -61,7 +61,9 @@ awsdeploy:
 		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamProjectName=$(PROJECT_NAME) \
-		ParamReportBucket=${AWS_REPORT_BUCKET}
+		ParamReportBucket=${AWS_REPORT_BUCKET} \
+		ParamSecurityGroupIds=$(SECURITY_GROUP_IDS) \
+		ParamSubnetIds=$(SUBNET_IDS)
 
 describe:
 	@aws cloudformation describe-stacks \
