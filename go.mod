@@ -9,6 +9,7 @@ require (
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/pulpfree/go-errors v1.0.1
 	github.com/pulpfree/lambda-go-auth v0.1.0
+	github.com/pulpfree/lambda-go-proxy-response v1.0.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/pretty v1.0.2 // indirect
