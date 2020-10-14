@@ -20,9 +20,6 @@ Parameters:
   ParamKMSKeyID:
     Description: KMS key id
     Type: String
-  ParamThundraKey:
-    Description: thundra.io API key
-    Type: String
   ParamReportBucket:
     Description: Bucket for report files
     Type: String
