@@ -69,9 +69,8 @@ func (suite *IntegSuite) TestValidateStage() {
 func (suite *IntegSuite) TestSetFinal() {
 
 	var se StageEnvironment
-	err := suite.cfg.setFinal()
+	suite.cfg.setFinal()
 
-	suite.NoError(err)
 	suite.Equal(suite.cfg.AWSRegion, defs.AWSRegion, "Expected Config.AWSRegion (%s) to equal defs.AWSRegion (%s)", suite.cfg.AWSRegion, defs.AWSRegion)
 	suite.IsType(se, suite.cfg.Stage)
 }

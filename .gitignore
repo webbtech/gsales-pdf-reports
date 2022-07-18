@@ -14,9 +14,11 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 
+# Misc
+.vscode/
 .env
 dist/
 docs/ssm.md
 tmp
 scratch
-package.yml
+package*.yml

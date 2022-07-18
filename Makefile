@@ -1,10 +1,18 @@
+# if the KEY environment variable is not set to either stage or prod, makefile will fail
+# KEY is confirmed below in the check_env directive
+# example:
+# for stage run: ENV=stage make
+# for production run: ENV=prod make
 include .env
 
 # found yolo at: https://azer.bike/journal/a-good-makefile-for-go/
 
 AWS_STACK_NAME ?= $(PROJECT_NAME)
 
-deploy: build awspackage awsdeploy
+deploy: check_env build awspackage awsdeploy
+
+check_env:
+	@echo -n "Your environment is $(ENV)? [y/N] " && read ans && [ $${ans:-N} = y ]
 
 clean:
 	@rm -rf dist
@@ -14,7 +22,6 @@ build: clean
 	@for dir in `ls handler`; do \
 		GOOS=linux go build -o dist/$$dir github.com/pulpfree/gsales-pdf-reports/handler/$$dir; \
 	done
-	@GOOS=linux go build -o dist/authorizer github.com/pulpfree/gsales-pdf-reports/authorizer;
 	@cp ./config/defaults.yml dist/
 	@cp -r ./image dist/
 	@echo "build successful"
@@ -58,12 +65,15 @@ awsdeploy:
 	--parameter-overrides \
 		ParamCertificateArn=$(CERTIFICATE_ARN) \
 		ParamCustomDomainName=$(CUSTOM_DOMAIN_NAME) \
+		ParamENV=$(ENV) \
 		ParamHostedZoneId=$(HOSTED_ZONE_ID) \
 		ParamKMSKeyID=$(KMS_KEY_ID) \
 		ParamProjectName=$(PROJECT_NAME) \
 		ParamReportBucket=${AWS_REPORT_BUCKET} \
+		ParamSSMPath=$(SSM_PARAM_PATH) \
 		ParamSecurityGroupIds=$(SECURITY_GROUP_IDS) \
-		ParamSubnetIds=$(SUBNET_IDS)
+		ParamSubnetIds=$(SUBNET_IDS) \
+		ParamUserPoolArn=$(USER_POOL_ARN)
 
 describe:
 	@aws cloudformation describe-stacks \

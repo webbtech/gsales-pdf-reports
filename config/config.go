@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -40,24 +41,27 @@ var (
 // Load method
 func (c *Config) Load() (err error) {
 
-	err = c.setDefaults()
-	if err != nil {
+	if err = c.setDefaults(); err != nil {
 		return err
 	}
-	err = c.setEnvVars()
-	if err != nil {
+
+	// I want the environment vars to be the final say, but we need them for the SSM Params
+	// hence calling it twice
+	if err = c.setEnvVars(); err != nil {
 		return err
 	}
-	err = c.setSSMParams()
-	if err != nil {
+
+	if err = c.setSSMParams(); err != nil {
 		return err
 	}
-	err = c.setFinal()
-	if err != nil {
+
+	if err = c.setEnvVars(); err != nil {
 		return err
 	}
 
 	c.setDBConnectURL()
+	c.setFinal()
+
 	return err
 }
 
@@ -94,34 +98,31 @@ func (c *Config) setDefaults() (err error) {
 }
 
 // validateStage method validates requested Stage exists
-func (c *Config) validateStage() error {
+func (c *Config) validateStage() (err error) {
 
-	validEnv := false
+	validEnv := true
 
 	switch defs.Stage {
 	case "dev":
+	case "development":
 		c.Stage = DevEnv
-		validEnv = true
 	case "stage":
 		c.Stage = StageEnv
-		validEnv = true
 	case "test":
 		c.Stage = TestEnv
-		validEnv = true
 	case "prod":
 		c.Stage = ProdEnv
-		validEnv = true
 	case "production":
 		c.Stage = ProdEnv
-		validEnv = true
+	default:
+		validEnv = false
 	}
 
 	if !validEnv {
-		// return errors.New(fmt.Sprintf("Invalid Stage type: %s", c.Stage))
-		return fmt.Errorf("Invalid Stage type: %s", defs.Stage)
+		return errors.New(fmt.Sprintf("Invalid StageEnvironment requested: %s", defs.Stage))
 	}
 
-	return nil
+	return err
 }
 
 // sets any environment variables that match the default struct fields
@@ -187,29 +188,22 @@ func (c *Config) setSSMParams() (err error) {
 // Build a url used in mgo.Dial as described in: https://godoc.org/gopkg.in/mgo.v2#Dial
 func (c *Config) setDBConnectURL() *Config {
 
-	var userPass, authSource string
-
-	if defs.DBUser != "" && defs.DBPassword != "" {
-		userPass = defs.DBUser + ":" + defs.DBPassword + "@"
+	if c.GetStageEnv() != TestEnv {
+		c.setAWSConnectURL()
+		return c
 	}
 
-	if userPass != "" {
-		authSource = "?authSource=admin"
-	}
-
-	c.DBConnectURL = "mongodb://" + userPass + defs.DBHost + "/" + authSource
-
+	c.DBConnectURL = fmt.Sprintf("mongodb://%s/?readPreference=primary&ssl=false&directConnection=true", defs.DBHost)
 	return c
 }
 
+func (c *Config) setAWSConnectURL() {
+	c.DBConnectURL = fmt.Sprintf("mongodb+srv://%s/%s?authSource=%sexternal&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", defs.DBHost, defs.DBName, "$")
+}
+
 // Copies required fields from the defaults to the Config struct
-func (c *Config) setFinal() (err error) {
-
+func (c *Config) setFinal() {
 	c.AWSRegion = defs.AWSRegion
-	c.CognitoClientID = defs.CognitoClientID
-	c.S3Bucket = defs.S3Bucket
 	c.DBName = defs.DBName
-	err = c.validateStage()
-
-	return err
+	c.S3Bucket = defs.S3Bucket
 }
