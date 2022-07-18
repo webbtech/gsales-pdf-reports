@@ -91,7 +91,7 @@ func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyRes
 
 	return pres.ProxyRes(pres.Response{
 		Code:      201,
-		Data:      SignedURL{URL: url},
+		Data:      url,
 		Status:    "success",
 		Timestamp: t.Unix(),
 	}, hdrs, nil), nil

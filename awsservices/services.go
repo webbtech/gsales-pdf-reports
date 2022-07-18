@@ -42,7 +42,7 @@ func (s *S3Service) PutFile(prefix string, file *bytes.Buffer) (key string, err 
 		Bucket:             aws.String(s.cfg.S3Bucket),
 		Key:                aws.String(prefix),
 		Body:               file,
-		ContentType:        aws.String("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+		ContentType:        aws.String("application/pdf"),
 		ContentDisposition: aws.String("attachment"),
 	})
 	if err != nil {

@@ -1,0 +1,5 @@
+
+Todo:
+  ☐ rename awsservices to services - check xls-reports for example
+  ☐ move main file and package out of handler dir (similar to xls-reports) and use verb to determine request (not path) for true(er) REST
+  ☐ fix and upgrade tests
